@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 resource "aws_lambda_function" "events_lambda" {
   function_name = var.events_function_name
   role          = aws_iam_role.lambda_role.arn
-  handler       = var.handler
+  handler       = var.events_handler
   runtime       = var.runtime
   filename         = var.events_source_code_path
   source_code_hash = filebase64sha256(var.events_source_code_path)
@@ -66,7 +66,7 @@ resource "aws_lambda_function" "events_lambda" {
 resource "aws_lambda_function" "users_lambda" {
   function_name = var.users_function_name
   role          = aws_iam_role.lambda_role.arn
-  handler       = var.handler
+  handler       = var.users_handler
   runtime       = var.runtime
   filename         = var.users_source_code_path
   source_code_hash = filebase64sha256(var.users_source_code_path)

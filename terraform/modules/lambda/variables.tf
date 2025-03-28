@@ -13,8 +13,13 @@ variable "runtime" {
   type        = string
 }
 
-variable "handler" {
-  description = "The function entrypoint in your code"
+variable "events_handler" {
+  description = "The function entrypoint for events code"
+  type        = string
+}
+
+variable "users_handler" {
+  description = "The function entrypoint for users code"
   type        = string
 }
 
