@@ -92,7 +92,7 @@ resource "aws_lambda_permission" "api_gateway_users" {
   action        = "lambda:InvokeFunction"
   function_name = var.users_lambda_arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/*"
+  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/dev/POST/users/create-user"
 }
 
 resource "aws_lambda_permission" "api_gateway_events" {
@@ -100,12 +100,20 @@ resource "aws_lambda_permission" "api_gateway_events" {
   action        = "lambda:InvokeFunction"
   function_name = var.events_lambda_arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/*"
+  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/dev/POST/events/create-event"
 }
 
-# Add the deployment resource
+# API Deployment
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
+
+  triggers = {
+    redeployment = sha1(join(",", [
+      aws_api_gateway_method.create_user_post.id,
+      aws_api_gateway_method.create_event_post.id,
+      aws_api_gateway_method.find_event_post.id
+    ]))
+  }
 
   depends_on = [
     aws_api_gateway_integration.create_user_post,
@@ -114,9 +122,11 @@ resource "aws_api_gateway_deployment" "deployment" {
   ]
 }
 
-#add stage resource
+# API Stage
 resource "aws_api_gateway_stage" "stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = "dev"
+
+  depends_on = [aws_api_gateway_deployment.deployment]
 }
