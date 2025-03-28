@@ -1,21 +1,24 @@
 import json
 import boto3
 import os
-import requests
+import urllib3
 from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb')
 table_name = os.environ['USERS_TABLE_NAME']
 table = dynamodb.Table(table_name)
 
+http = urllib3.PoolManager()
+
 def get_geo_info(ip_address):
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip_address}")
-        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
-        return response.json()
-    except requests.exceptions.RequestException as e:
+        url = f"http://ip-api.com/json/{ip_address}"
+        response = http.request('GET', url)
+        if response.status == 200:
+            return json.loads(response.data.decode('utf-8'))
+    except Exception as e:
         print(f"Error getting geo info: {e}")
-        return None
+    return None
 
 def lambda_handler(event, context):
     try:

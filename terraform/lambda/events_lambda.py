@@ -1,8 +1,6 @@
 import json
 import boto3
 import os
-import requests
-from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb')
 events_table = dynamodb.Table(os.environ['EVENTS_TABLE_NAME'])
