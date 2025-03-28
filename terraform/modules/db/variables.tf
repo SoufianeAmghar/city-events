@@ -8,14 +8,6 @@ variable "users_table_name" {
   type        = string
 }
 
-variable "attribute_definitions" {
-  description = "The attribute definitions for the DynamoDB table"
-  type = list(object({
-    name = string
-    type = string
-  }))
-}
-
 variable "read_capacity" {
   description = "The read capacity units for the DynamoDB table"
   type        = number
@@ -24,4 +16,12 @@ variable "read_capacity" {
 variable "write_capacity" {
   description = "The write capacity units for the DynamoDB table"
   type        = number
+}
+
+variable "attribute_definitions" {
+  description = "The attribute definitions for the DynamoDB table"
+  type = list(object({
+    name = string
+    type = string
+  }))
 }

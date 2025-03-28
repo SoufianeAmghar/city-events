@@ -17,3 +17,13 @@ variable "users_lambda_arn" {
   description = "The ARN of the Users Lambda function"
   type        = string
 }
+
+variable "region" {
+  description = "The AWS region"
+  type        = string
+}
+
+variable "account_id" {
+  description = "The AWS account ID"
+  type        = string
+}

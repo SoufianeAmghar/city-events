@@ -30,7 +30,7 @@ resource "aws_api_gateway_integration" "create_user_post" {
   http_method             = aws_api_gateway_method.create_user_post.http_method
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = var.users_lambda_arn
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${var.users_lambda_arn}/invocations"
 }
 
 # Events Resource
@@ -60,7 +60,7 @@ resource "aws_api_gateway_integration" "create_event_post" {
   http_method             = aws_api_gateway_method.create_event_post.http_method
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = var.events_lambda_arn
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${var.events_lambda_arn}/invocations"
 }
 
 # Events/Find Event Endpoint
@@ -83,30 +83,40 @@ resource "aws_api_gateway_integration" "find_event_post" {
   http_method             = aws_api_gateway_method.find_event_post.http_method
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = var.events_lambda_arn
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${var.events_lambda_arn}/invocations"
 }
 
 # Lambda Permissions
 resource "aws_lambda_permission" "api_gateway_users" {
-  statement_id  = "AllowAPIGatewayInvoke"
+  statement_id  = "AllowAPIGatewayInvokeUsers"
   action        = "lambda:InvokeFunction"
   function_name = var.users_lambda_arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/*"
 }
 
 resource "aws_lambda_permission" "api_gateway_events" {
-  statement_id  = "AllowAPIGatewayInvoke"
+  statement_id  = "AllowAPIGatewayInvokeEvents"
   action        = "lambda:InvokeFunction"
   function_name = var.events_lambda_arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/*"
 }
 
-output "api_id" {
-  value = aws_api_gateway_rest_api.api.id
+# Add the deployment resource
+resource "aws_api_gateway_deployment" "deployment" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+
+  depends_on = [
+    aws_api_gateway_integration.create_user_post,
+    aws_api_gateway_integration.create_event_post,
+    aws_api_gateway_integration.find_event_post
+  ]
 }
 
-output "api_endpoint" {
-  value = aws_api_gateway_rest_api.api.execution_arn
+#add stage resource
+resource "aws_api_gateway_stage" "stage" {
+  deployment_id = aws_api_gateway_deployment.deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  stage_name    = "dev"
 }
