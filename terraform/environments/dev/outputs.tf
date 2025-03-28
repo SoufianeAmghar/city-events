@@ -29,3 +29,7 @@ output "s3_bucket_name" {
 output "s3_bucket_arn" {
   value = module.s3.bucket_arn
 }
+
+output "api_endpoint_url" {
+  value = module.api_gateway.api_endpoint
+}
